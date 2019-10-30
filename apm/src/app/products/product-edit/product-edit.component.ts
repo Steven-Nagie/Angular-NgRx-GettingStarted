@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Product } from '../product';
 import { GenericValidator } from '../../shared/generic-validator';
 import { NumberValidators } from '../../shared/number.validator';
-import * as fromProduct from '../state/product.reducer';
+import * as fromProduct from '../state';
 import * as productActions from '../state/product.actions';
 import { select, Store } from '@ngrx/store';
 import { takeWhile } from 'rxjs/operators';

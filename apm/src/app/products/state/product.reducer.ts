@@ -1,11 +1,6 @@
 import { Product } from '../product';
-import * as fromRoot from '../../state/app.state';
-import { createFeatureSelector, createSelector } from '@ngrx/store';
 import { ProductActions, ProductActionTypes } from './product.actions';
 
-export interface State extends fromRoot.State {
-  products: ProductState;
-}
 
 export interface ProductState {
   showProductCode: boolean;
@@ -20,47 +15,6 @@ const initialState: ProductState = {
   products: [],
   error: ''
 };
-
-
-/**
- * ========================================================
- *                        SELECTORS
- * =========================================================
- */
-const getProductFeatureState = createFeatureSelector<ProductState>('products');
-
-export const getShowProductCode = createSelector(
-  getProductFeatureState,
-  (state: ProductState) => state.showProductCode
-);
-
-export const getProducts = createSelector(
-  getProductFeatureState,
-  (state: ProductState) => state.products
-);
-
-export const getCurrentProductId = createSelector(
-  getProductFeatureState,
-  (state: ProductState) => state.currentProductId
-);
-
-export const getCurrentProduct = createSelector(
-  getCurrentProductId,
-  getProducts,
-  (currentProductId: number, products: Product[]) => currentProductId !== 0 ? products.find(product => product.id === currentProductId) : {
-    id: 0,
-    productName: '',
-    productCode: 'New',
-    description: '',
-    starRating: 0
-  }
-);
-
-export const getError = createSelector(
-  getProductFeatureState,
-  (state: ProductState) => state.error
-);
-
 /**
  * ========================================================
  *                        REDUCER
