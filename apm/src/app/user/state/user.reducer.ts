@@ -1,5 +1,6 @@
 import { User } from '../user';
 import { createFeatureSelector, createSelector } from '@ngrx/store';
+import { UserActions, UserActionTypes } from './user.action';
 
 export interface UserState {
   displayMaskUserName: boolean;
@@ -34,12 +35,17 @@ export const getCurrentUser = createSelector(
  *                        REDUCER
  * =========================================================
  */
-export function reducer(state = initialState, action) {
+export function reducer(state = initialState, action: UserActions) {
   switch (action.type) {
-    case 'TOGGLE_MASK_USER_NAME':
+    case UserActionTypes.ToggleMaskUserName:
       return {
         ...state,
         displayMaskUserName: action.payload
+      };
+    case UserActionTypes.SetCurrentUser:
+      return {
+        ...state,
+        currentUser: { ...action.payload }
       };
     default:
       return state;
