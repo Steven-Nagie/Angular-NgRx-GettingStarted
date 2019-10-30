@@ -9,14 +9,16 @@ export interface State extends fromRoot.State {
 
 export interface ProductState {
   showProductCode: boolean;
-  currentProduct: Product;
+  currentProductId: number | null;
   products: Product[];
+  error: string;
 }
 
 const initialState: ProductState = {
   showProductCode: true,
-  currentProduct: null,
-  products: []
+  currentProductId: null,
+  products: [],
+  error: ''
 };
 
 
@@ -32,14 +34,31 @@ export const getShowProductCode = createSelector(
   (state: ProductState) => state.showProductCode
 );
 
-export const getCurrentProduct = createSelector(
-  getProductFeatureState,
-  (state: ProductState) => state.currentProduct
-);
-
 export const getProducts = createSelector(
   getProductFeatureState,
   (state: ProductState) => state.products
+);
+
+export const getCurrentProductId = createSelector(
+  getProductFeatureState,
+  (state: ProductState) => state.currentProductId
+);
+
+export const getCurrentProduct = createSelector(
+  getCurrentProductId,
+  getProducts,
+  (currentProductId: number, products: Product[]) => currentProductId !== 0 ? products.find(product => product.id === currentProductId) : {
+    id: 0,
+    productName: '',
+    productCode: 'New',
+    description: '',
+    starRating: 0
+  }
+);
+
+export const getError = createSelector(
+  getProductFeatureState,
+  (state: ProductState) => state.error
 );
 
 /**
@@ -54,26 +73,67 @@ export function reducer(state = initialState, action: ProductActions): ProductSt
         ...state,
         showProductCode: action.payload
       };
-    case ProductActionTypes.SetCurrentProduct:
+    case ProductActionTypes.SetCurrentProductId:
       return {
         ...state,
-        currentProduct: { ...action.payload }
+        currentProductId: action.payload
       };
     case ProductActionTypes.ClearCurrentProduct:
       return {
         ...state,
-        currentProduct: null
+        currentProductId: null
       };
     case ProductActionTypes.InitializeCurrentProduct:
       return {
         ...state,
-        currentProduct: {
-          id: null,
-          productName: 'New',
-          productCode: '',
-          description: 'New',
-          starRating: 0
-        }
+        currentProductId: 0
+      };
+    case ProductActionTypes.LoadSuccess:
+      return {
+        ...state,
+        products: action.payload,
+        error: ''
+      };
+    case ProductActionTypes.LoadFailure:
+      return {
+        ...state,
+        error: action.payload
+      };
+    case ProductActionTypes.UpdateProductSuccess:
+      // Always create new state, never modify old state -> that's why we create a new array with map
+      const updatedProducts: Product[] = state.products.map(
+        product => action.payload.id === product.id ? action.payload : product
+      );
+      return {
+        ...state,
+        products: updatedProducts,
+        currentProductId: action.payload.id,
+        error: ''
+      };
+    case ProductActionTypes.CreateProductSuccess:
+      // Always create new state, never modify old state -> that's why we create a new array with map
+      const newProducts: Product[] = state.products.concat(action.payload);
+      return {
+        ...state,
+        products: newProducts,
+        currentProductId: action.payload.id,
+        error: ''
+      };
+    case ProductActionTypes.DeleteProductSuccess:
+      // Always create new state, never modify old state -> that's why we create a new array with map
+      const productsWithoutDeleted: Product[] = state.products.filter(product => product.id !== action.payload);
+      return {
+        ...state,
+        products: productsWithoutDeleted,
+        currentProductId: action.payload,
+        error: ''
+      };
+    case ProductActionTypes.CreateProductFailure:
+    case ProductActionTypes.UpdateProductFailure:
+    case ProductActionTypes.DeleteProductFailure:
+      return {
+        ...state,
+        error: action.payload
       };
     default:
       return state;
